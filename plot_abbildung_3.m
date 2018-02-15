@@ -27,12 +27,12 @@ epsilon=1/(mu*c^2);
 % Wellenwiderstand (in Ohm) -> Skalar
 Z_c=sqrt(mu/epsilon)/pi*acosh(s/(2*r_0));
 % Anzahl der Verdrillungen -> Skalar
-%twists=1e-6;
+twists=1e-6;
 %twists=1;
 %twists=1.5;
 %twists=3;
 %twists=5;
-twists=10;
+%twists=10;
 % Schlaglänge (in m) -> Skalar
 P=l/twists;
 % Abschlussimpedanz am Anfang, normiert auf Z_c -> Skalar
