@@ -22,8 +22,15 @@ mu=4*pi*1e-7;
 % Permittivität (in As/Vm) -> Skalar
 epsilon=1/(mu*c^2);
 
+% coordinates of the lines
+[x_1,y_1,z_1,x_2,y_2,z_2,r_0]=coordinates('two_lines');
+r_0=r_0(1);
+l=y_2(1)-y_1(1);
+
 % Daten der Doppelleitung
-[s,r_0,l]=tl_dimensions('twisted');
+[s]=tl_dimensions('twisted');
+%[s,r_0,l]=tl_dimensions('twisted');
+
 % Wellenwiderstand (in Ohm) -> Skalar
 Z_c=sqrt(mu/epsilon)/pi*acosh(s/(2*r_0));
 % Anzahl der Verdrillungen -> Skalar
@@ -97,23 +104,25 @@ t=linspace(0,t_max,N_t);
 
 % Zeitverlauf berechnen
 % unverdrillte Leitung
-%plots=iu_0l_t_spice(t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
+plots=iu_0l_t_spice(t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
+
 % verdrillte Leitung
-if strcmp(quantity,'U')
-    if diode
-        [plots,comptime]=iu_0l_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,{Z_2_n,'D'},E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
-    else
-        [plots,comptime]=iu_0l_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
-    end
-elseif strcmp(quantity,'U_along')
-    if diode
-        [plots,comptime]=iu_r_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,{Z_2_n,'D'},E_0,parameter,t_beta,k_vector,e_vector,time_func,'U',typeof,geometry);
-    else
-        [plots,comptime]=iu_r_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,'U',typeof,geometry);
-    end
-end
+% if strcmp(quantity,'U')
+%     if diode
+%         [plots,comptime]=iu_0l_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,{Z_2_n,'D'},E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
+%     else
+%         [plots,comptime]=iu_0l_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
+%     end
+% elseif strcmp(quantity,'U_along')
+%     if diode
+%         [plots,comptime]=iu_r_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,{Z_2_n,'D'},E_0,parameter,t_beta,k_vector,e_vector,time_func,'U',typeof,geometry);
+%     else
+%         [plots,comptime]=iu_r_t_twisted_spice(t,mu,epsilon,s,r_0,l,P,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,'U',typeof,geometry);
+%     end
+% end
+
 % Rechenzeit anzeigen
-disp(['Rechenzeit: ',num2str(comptime),' s']);
+%disp(['Rechenzeit: ',num2str(comptime),' s']);
 
 % Modus -> String
 % direkte Multiplikation des Spektrums mit der Frequenzbereichslösung

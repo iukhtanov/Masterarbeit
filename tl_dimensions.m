@@ -12,6 +12,7 @@
     % r_0 - Radius der Leiter (in m) -> Skalar
     % l   - Länge der Leitung (in m) -> Skalar
 
+% function [s,r_0,l]=tl_dimensions(modus)
 function [s,r_0,l]=tl_dimensions(modus)
     if strcmp(modus,'tesche')
         % wie in [1]
@@ -33,8 +34,8 @@ function [s,r_0,l]=tl_dimensions(modus)
     elseif strcmp(modus,'twisted')
         % für die Veröffentlichung in Düsseldorf 2009
         s=0.01;                 % Abstand der Leiter (in m) -> Skalar
-        r_0=0.5e-3;             % Radius der Leiter (in m) -> Skalar
-        l=30;                   % Länge der Leitung (in m) -> Skalar
+        %r_0=0.5e-3;             % Radius der Leiter (in m) -> Skalar
+        % l=30;                   % Länge der Leitung (in m) -> Skalar
         % Problem: Berechnungszeit in CONCEPT zu lang
     elseif strcmp(modus,'twisted2')
         % für die Veröffentlichung in Düsseldorf 2009
