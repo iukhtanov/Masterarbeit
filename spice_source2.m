@@ -12,7 +12,7 @@
     % epsilon  - elektrische Feldkonstante (in As/Vm) -> Skalar
     % s        - Abstand der Leiter (in m) -> Skalar
     % r_0      - Radius der Leiter (in m) -> Skalar
-    % l        - Länge der Leitung (in m) -> Skalar
+    % l2        - Länge der Leitung (in m) -> Skalar
     % Z_1_n    - Lastwiderstand am Anfang (normiert auf Z_c) -> Skalar
     % Z_2_n    - Lastwiderstand am Ende (normiert auf Z_c) -> Skalar
     % quantity - physikalische Größe -> String
@@ -30,7 +30,7 @@
         % DC       -> Gleichstromverluste
         % max_f    -> Verluste bei der maximalen Frequenz
 
-function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,quantity,typeof,d,losses)
+function R2=spice_source2(filename,t,mu,epsilon,s,r_0,l2,Z_1_n,Z_2_n,Z_1_2,Z_2_2,quantity,typeof,d,losses,R_start)
     % prüfen, ob d gesetzt wurden, wenn nicht auf Standardwert setzen
     if nargin<=11
         d=20;
@@ -48,9 +48,9 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
         U_tr_index=8;
     else
         % Index der tangentialen Spannungsquellen -> Skalar
-        U_tl_index=5;
+        U_tl_index=9;
         % Index der transversalen Spannungsquellen -> Skalar
-        U_tr_index=6;
+        U_tr_index=10;
     end
 
     % Konstanten
@@ -64,13 +64,13 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
     lambda_min=c*Delta_t;
 
     % Anzahl der örtlichen Diskretisierungsschritte
-    R=ceil(d*l/lambda_min);
+    R2=ceil(d*l2/lambda_min);
 
     % Anzahl der Zeitschritte -> Skalar
     T=length(t);
 
     % örtliche Diskretisierung (in m) -> Skalar
-    h=l/R;
+    h=l2/R2;
 
     % Leitungsparamter
     Z_c=sqrt(mu/epsilon)/pi*acosh(s/(2*r_0));   % Wellenwiderstand (in Ohm) -> Skalar
@@ -88,62 +88,55 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
     % Generator und Last
     if iscell(Z_1_n)
         % Z_1_n ist ein Cell-Array
-       % Z_1=Z_1_n{1}*Z_c;                              % Lastwiderstand am Anfang (in Ohm) -> Skalar
+        % Z_1=Z_1_n{1}*Z_c;                              % Lastwiderstand am Anfang (in Ohm) -> Skalar
+        Z_1=1e9; 
         if Z_1_n{2}=='D'
             diode_1=true;
         end
     else
-        %Z_1=Z_1_n*Z_c;                              % Lastwiderstand am Anfang (in Ohm) -> Skalar
+        % Z_1=Z_1_n*Z_c;                              % Lastwiderstand am Anfang (in Ohm) -> Skalar
+        Z_1=1e9; 
         diode_1=false;
     end
     if iscell(Z_2_n)
         % Z_2_n ist ein Cell-Array
-%        if y_2(1)==y_1(2)
-%        Z_2=1e9;% Lastwiderstand am Ende (in Ohm) -> Skalar
-%         else
-%        Z_2=Z_2_n{1}*Z_c; 
-%        end
+        Z_2=Z_2_n{1}*Z_c;                              % Lastwiderstand am Ende (in Ohm) -> Skalar
         if Z_2_n{2}=='D'
             diode_2=true;
         end
     else
-        %Z_2=Z_2_n*Z_c;                              % Lastwiderstand am Ende (in Ohm) -> Skalar
-%         if y_2(1)==y_1(2)
-%        Z_2=1e9;% Lastwiderstand am Ende (in Ohm) -> Skalar
-%         else
-%        Z_2=Z_2_n{1}*Z_c; 
-%        end
+        Z_2=Z_2_n*Z_c;                              % Lastwiderstand am Ende (in Ohm) -> Skalar
         diode_2=false;
     end
 
     % Netzliste öffnen
-    netlist=fopen(filename,'wt');    % Datei öffnen
+    netlist=fopen(filename,'at');    % Datei öffnen
 
     % Netzliste ausgeben
-    fprintf(netlist,'%g %g\n',T,Delta_t);       % Optionen ausgeben (Anzahl Zeitschritte, Zeitschritt)
-    fprintf(netlist,'%g %g\n',R,h);             % Optionen ausgeben (Anzahl Ortspunkte, Ortsschritt)
+%     fprintf(netlist,'%g %g\n',T,Delta_t);       % Optionen ausgeben (Anzahl Zeitschritte, Zeitschritt)
+%     fprintf(netlist,'%g %g\n',R,h);             % Optionen ausgeben (Anzahl Ortspunkte, Ortsschritt)
     % was soll geplottet werden
     if strcmp(losses,'lossless')
         % im verlustlosen Fall, nur LC-Glieder
         if strcmp(quantity,'U')
             % für die Spannung am Anfang und Ende der Leitung
             if strcmp(typeof,'total')
-                fprintf(netlist,'%d %d %d %d\n',3,1,0,1);       % Gesamtspannung (total voltage) am Anfang plotten
-                fprintf(netlist,'%d %d %d %d\n',3,2*R+3,0,1);   % Gesamtspannung (total voltage) am Ende plotten
+                %fprintf(netlist,'%d %d %d %d\n',3,1,0,1);       % Gesamtspannung (total voltage) am Anfang plotten
+                %fprintf(netlist,'%d %d %d %d\n',3,2*R+3,0,1);   % Gesamtspannung (total voltage) am Ende plotten
             elseif strcmp(typeof,'scattered')
-                fprintf(netlist,'%d %d %d %d\n',3,2,0,1);       % Streuspannung (scattered voltage) am Anfang plotten
-                fprintf(netlist,'%d %d %d %d\n',3,2*R+2,0,1);   % Streuspannung (scattered voltage) am Ende plotten
+                %fprintf(netlist,'%d %d %d %d\n',3,2,0,1);       % Streuspannung (scattered voltage) am Anfang plotten
+                %fprintf(netlist,'%d %d %d %d\n',3,2*R+2,0,1);   % Streuspannung (scattered voltage) am Ende plotten
             elseif strcmp(typeof,'incident')
-                fprintf(netlist,'%d %d %d %d\n',1,-1,0,1);      % einfallende Spannung (incident voltage) am Anfang plotten
-                fprintf(netlist,'%d %d %d %d\n',1,-(R+2),0,1);	% einfallende Spannung (incident voltage) am Ende plotten
+                %fprintf(netlist,'%d %d %d %d\n',1,-1,0,1);      % einfallende Spannung (incident voltage) am Anfang plotten
+                %fprintf(netlist,'%d %d %d %d\n',1,-(R+2),0,1);	% einfallende Spannung (incident voltage) am Ende plotten
             else
                 error(['The ',typeof,'-type for the voltage is unknown.']);
             end
         elseif strcmp(quantity,'I')
             % für den Strom am Anfang und Ende der Leitung
             if strcmp(typeof,'total')
-                fprintf(netlist,'%d %d %d %d\n',4,-1,0,1);  % Gesamtstrom (total current) am Anfang plotten
-                fprintf(netlist,'%d %d %d %d\n',4,2,0,1);   % Gesamtstrom (total current) am Ende plotten
+               % fprintf(netlist,'%d %d %d %d\n',4,-1,0,1);  % Gesamtstrom (total current) am Anfang plotten
+                %fprintf(netlist,'%d %d %d %d\n',4,2,0,1);   % Gesamtstrom (total current) am Ende plotten
             else
                 error(['The ',typeof,'-type for the current is unknown.']);
             end
@@ -165,19 +158,27 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
             error(['The quantity ',quantity,' for the lossless case is unknown.']);
         end
         % eigentliche Netzliste (Bauelement, Knoten 1, Knoten 2, Wert1, Wert2, Wert3), 6 Spalten
-        fprintf(netlist,'R 1 0 %g 0 0\n',Z_1_1);          % Lastwiderstand am Anfang
+       fprintf(netlist,'R %g 0 %g 0 0\n',R_start+1,Z_1_2);          % Lastwiderstand am Anfang
         if diode_1
             % Diode parallel zum Lastwiderstand am Anfang
-            fprintf(netlist,'D 1 0 %g %g 0\n',1e-6,25e-3);        
+            fprintf(netlist,'D %g 0 %g %g 0\n',R_start+1,1e-6,25e-3);        
         end
-        fprintf(netlist,'U 2 1 1 %d %d\n',U_tr_index,2*R+1);        % Spannungsquelle U_t1 am Anfang
-        for n=1:R % für Diskretisierungszelle n
-            fprintf(netlist,'L %d %d %g 0 0\n',2*n,2*n+1,L);      % Längsinduktivität
-            fprintf(netlist,'U %d %d 1 %d %d\n',2*n+2,2*n+1,U_tl_index,n);    % Spannungsquelle E_tan
-            fprintf(netlist,'C %d %d %g 0 0\n',2*n+2,0,C);        % Querkapazität
+        fprintf(netlist,'U %g %g 1 %d %d\n',R_start-1,R_start+1,U_tr_index,2*R2+1);        % Spannungsquelle U_t1 am Anfang % 2*R2+1
+        for n=1:R2 % für Diskretisierungszelle n
+            if n==1
+                % first cell 
+                fprintf(netlist,'L %d %d %g 0 0\n',R_start*n-1,R_start*n+2,L);
+                fprintf(netlist,'U %d %d 1 %d %d\n',R_start*n+3,R_start*n+2,U_tl_index,n);    % Spannungsquelle E_tan / Voltage source E_tan % n
+                fprintf(netlist,'C %d %d %g 0 0\n',R_start*n+3,0,C);        % Querkapazit?t / shunt capacitance
+            else
+                % other cells
+                fprintf(netlist,'L %d %d %g 0 0\n',(R_start-1)+(2*n),(R_start-1)+(2*n+1),L);      % L?ngsinduktivit?t
+                fprintf(netlist,'U %d %d 1 %d %d\n',(R_start-1)+(2*n+2),(R_start-1)+(2*n+1),U_tl_index,n);    % Spannungsquelle E_tan / Voltage source E_tan
+                fprintf(netlist,'C %d %d %g 0 0\n',(R_start-1)+(2*n+2),0,C);        % Querkapazit?t / shunt capacitance
+            end
         end
-        fprintf(netlist,'U %d %d 1 %d %d\n',2*R+2,2*R+3,U_tr_index,2*R+2);      % Spannungsquelle U_t2 am Ende
-        fprintf(netlist,'R %d 0 %g 0 0\n',2*R+3,Z_2_1);               % Lastwiderstand am Ende
+        fprintf(netlist,'U %d %d 1 %d %d\n',2*R_start-2,2*R_start-1,U_tr_index,2*R2+2);      % Spannungsquelle U_t2 am Ende
+        fprintf(netlist,'R %d 0 %g 0 0\n',2*R_start-1,Z_2_2);               % Lastwiderstand am Ende
         if diode_2
             % Diode parallel zum Lastwiderstand am Ende
             fprintf(netlist,'D %d 0 %g %g 0\n',2*R+3,1e-6,25e-3);
@@ -224,7 +225,7 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
             error(['The quantity ',quantity,' for the case with losses is unknown.']);
         end
         % eigentliche Netzliste (Bauelement, Knoten 1, Knoten 2, Wert1, Wert2, Wert3), 6 Spalten
-        fprintf(netlist,'R 1 0 %g 0 0\n',Z_1_1);          % Lastwiderstand am Anfang
+        fprintf(netlist,'R 1 0 %g 0 0\n',Z_1);          % Lastwiderstand am Anfang
         fprintf(netlist,'U 2 1 1 %d %d\n',U_tr_index,2*R+1);        % Spannungsquelle U_t1 am Anfang
         for n=1:R % für Diskretisierungszelle n
             if strcmp(losses,'DC')
@@ -237,7 +238,7 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
             fprintf(netlist,'C %d %d %g 0 0\n',3*n+2,0,C);        % Querkapazität
         end
         fprintf(netlist,'U %d %d 1 %d %d\n',3*R+2,3*R+3,U_tr_index,2*R+2);      % Spannungsquelle U_t2 am Ende
-        fprintf(netlist,'R %d 0 %g 0 0\n',3*R+3,Z_2_1);               % Lastwiderstand am Ende
+        fprintf(netlist,'R %d 0 %g 0 0\n',3*R+3,Z_2);               % Lastwiderstand am Ende
     else
         error(['The losses-type ',losses,' is unknown.']);
     end

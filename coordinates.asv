@@ -6,7 +6,7 @@ if strcmp(modus,'two_lines')
         % x-Koordinaten der Anfänge der Leiter (in m) -> Zeilenvektor(1,L)
         x_1=[0, 0];
         % y-Koordinaten der Anfänge der Leiter (in m) -> Zeilenvektor(1,L)
-        y_1=[0, 30];
+        y_1=[0, 0];
         % z-Koordinaten der Anfänge der Leiter (in m) -> Zeilenvektor(1,L)
         z_1=[0.05, 0.05];
         
@@ -14,7 +14,7 @@ if strcmp(modus,'two_lines')
         % x-Koordinaten der Enden der Leiter (in m) -> Zeilenvektor(1,L)
         x_2=[0, 0];
         % y-Koordinaten der Enden der Leiter (in m) -> Zeilenvektor(1,L)
-        y_2=[30, 60];
+        y_2=[60, 0];
         % z-Koordinaten der Enden der Leiter (in m) -> Zeilenvektor(1,L)
         z_2=[0.05, 0.05];
         

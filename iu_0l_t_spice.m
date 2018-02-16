@@ -65,16 +65,16 @@
     % plots    - Lösung im Zeitbereich am Anfang und Ende der Leitung -> Matrix(2,T)
     % comptime - R
 
-function [plots,comptime]=iu_0l_t_spice(t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry,d,losses)
+function [plots,comptime]=iu_0l_t_spice(t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry,d,losses)
     % prüfen, ob d gesetzt wurden, wenn nicht auf Standardwert setzen
-    if nargin<=17
+    %if nargin<=17
         d=1;
-    end
+   %end
 
     % prüfen, ob losses gesetzt wurden, wenn nicht auf Standardwert setzen
-    if nargin<=18
+  %  if nargin<=18
         losses='lossless';
-    end
+ %   end
     
     % Debug
     %disp(d);
@@ -89,7 +89,8 @@ function [plots,comptime]=iu_0l_t_spice(t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,E_0,par
     end
 
     % Netzliste erstellen
-    R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,quantity,typeof,d,losses);
+    %R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,quantity,typeof,d,losses);
+    R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,quantity,typeof,d,losses)
 
     % Ortsbereich für die Auswertung -> Zeilenvektor(1,2*R+2);
     r_vector=r_vector_tl(s,l,R,geometry);

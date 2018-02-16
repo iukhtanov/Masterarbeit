@@ -24,12 +24,16 @@ epsilon=1/(mu*c^2);
 
 % coordinates of the lines
 [x_1,y_1,z_1,x_2,y_2,z_2,r_0]=coordinates('two_lines');
+% radius of the lines
 r_0=r_0(1);
+% length of the first line
 l=y_2(1)-y_1(1);
+% length of the second line
+l2=y_2(2)-y_1(2);
 
 % Daten der Doppelleitung
 [s]=tl_dimensions('twisted');
-%[s,r_0,l]=tl_dimensions('twisted');
+%[s,r_0,l]=tl_dimensions('twisted'); % original function
 
 % Wellenwiderstand (in Ohm) -> Skalar
 Z_c=sqrt(mu/epsilon)/pi*acosh(s/(2*r_0));
@@ -46,6 +50,17 @@ P=l/twists;
 Z_1_n=1/2;
 % Abschlussimpedanz am Ende, normiert auf Z_c -> Skalar
 Z_2_n=1/2;
+
+if y_2(1)==y_1(2) % check that two lines are connected to each other
+Z_1_1=Z_1_n*Z_c; % Lastwiderstand am Anfang (in Ohm) -> Skalar
+Z_2_1=1e9;
+Z_1_2=1e9;
+Z_2_2=Z_2_n*Z_c; % Lastwiderstand am Ende (in Ohm) -> Skalar
+else
+    Z_1_1=Z_1_n*Z_c; % Lastwiderstand am Anfang (in Ohm) -> Skalar
+    Z_2_1=Z_2_n*Z_c; % Lastwiderstand am Ende (in Ohm) -> Skalar
+end
+
 % Geomtrie -> String
 geometry='xz';
 
@@ -104,7 +119,46 @@ t=linspace(0,t_max,N_t);
 
 % Zeitverlauf berechnen
 % unverdrillte Leitung
-plots=iu_0l_t_spice(t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
+% if there is only one line
+% plots=iu_0l_t_spice(t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,E_0,parameter,t_beta,k_vector,e_vector,time_func,quantity,typeof,geometry);
+
+% (start) manual execution of the function "iu_0l_t_spice"
+
+% prüfen, ob d gesetzt wurden, wenn nicht auf Standardwert setzen
+%     if nargin<=17
+          d=1;
+%     end
+% 
+%     % prüfen, ob losses gesetzt wurden, wenn nicht auf Standardwert setzen
+%     if nargin<=18
+          losses='lossless';
+    %end
+    
+    % Debug
+    %disp(d);
+
+    % Dateiname -> String
+    if strcmp(losses,'lossless')
+        filename='tl_lossless.net';
+    elseif strcmp(losses,'DC')
+        filename='tl_DC_losses.net';
+    elseif strcmp(losses,'max_f')
+        filename='tl_max_f_losses.net';
+    end
+
+    % Netzliste erstellen
+    R1=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,quantity,typeof,d,losses)
+    R2=spice_source2(filename,t,mu,epsilon,s,r_0,l2,Z_1_n,Z_2_n,Z_1_2,Z_2_2,quantity,typeof,d,losses,2*R1+3)
+
+    % Ortsbereich für die Auswertung -> Zeilenvektor(1,2*R+2);
+    r_vector=r_vector_tl(s,l,R1,geometry);
+    
+    % Lichtgeschwindigkeit (in m/s) -> Skalar
+    c=1/sqrt(mu*epsilon);
+    
+    % Lösung berechnen
+    [t,plots,comptime]=spice(filename,E_0,c,e_vector,k_vector,r_vector,t_beta,time_func,parameter,geometry);
+% (end) manual execution of the function "iu_0l_t_spice"
 
 % verdrillte Leitung
 % if strcmp(quantity,'U')
