@@ -60,7 +60,7 @@ function [t,x_t]=invfourier(f,X_f,modus)
     end
 
     % Zeitantwort erstellen -> Zeilenvektor(1,2:N)
-    x_t(1:2*N)=xx_t(1:2*N);
+    x_t(1:2*N)=xx_t(1:2*N)
     
     % Zeitbereich erstellen (in s) -> Zeilenvektor(1,2:N)
     t=linspace(0,t_max*(2*N-1)/N,2*N);

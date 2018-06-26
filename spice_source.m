@@ -121,7 +121,7 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
 
     % Netzliste ausgeben
     fprintf(netlist,'%g %g\n',T,Delta_t);       % Optionen ausgeben (Anzahl Zeitschritte, Zeitschritt)
-    fprintf(netlist,'%g %g\n',R,h);             % Optionen ausgeben (Anzahl Ortspunkte, Ortsschritt)
+    fprintf(netlist,'%g %g\n',R*2,h);             % Optionen ausgeben (Anzahl Ortspunkte, Ortsschritt)
     % was soll geplottet werden
     if strcmp(losses,'lossless')
         % im verlustlosen Fall, nur LC-Glieder
@@ -129,7 +129,7 @@ function R=spice_source(filename,t,mu,epsilon,s,r_0,l,Z_1_n,Z_2_n,Z_1_1,Z_2_1,qu
             % für die Spannung am Anfang und Ende der Leitung
             if strcmp(typeof,'total')
                 fprintf(netlist,'%d %d %d %d\n',3,1,0,1);       % Gesamtspannung (total voltage) am Anfang plotten
-                fprintf(netlist,'%d %d %d %d\n',3,2*R+3,0,1);   % Gesamtspannung (total voltage) am Ende plotten
+                fprintf(netlist,'%d %d %d %d\n',3,(2*R+3)*2-1,0,1);   % Gesamtspannung (total voltage) am Ende plotten
             elseif strcmp(typeof,'scattered')
                 fprintf(netlist,'%d %d %d %d\n',3,2,0,1);       % Streuspannung (scattered voltage) am Anfang plotten
                 fprintf(netlist,'%d %d %d %d\n',3,2*R+2,0,1);   % Streuspannung (scattered voltage) am Ende plotten

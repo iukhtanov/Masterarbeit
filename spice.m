@@ -326,6 +326,7 @@ function [t,plots,comptime]=spice(netlist_name,E_0,c,e_vector,k_vector,r_vector,
     Delta_t=options(1,2);
     % Anzahl der Zellen -> Skalar
     N_r=options(2,1);
+    N_r=N_r/2;
     % Länge einer Zelle im Leitungsmodell (in m) -> Skalar
     Delta_r=options(2,2);
     % Richtung tangential und transversal zur Leitung -> Vektor(3,R)
@@ -476,7 +477,7 @@ function [t,plots,comptime]=spice(netlist_name,E_0,c,e_vector,k_vector,r_vector,
         node2=AUK_list(k,3);
         value1=AUK_list(k,4);
         value2=AUK_list(k,5);
-        value3=AUK_list(k,6);
+        value3=AUK_list(k,6)
         if typ=='U'
             % ideale Spannungsquelle
             % Zähler für U (unabhängige Quellen) erhöhen

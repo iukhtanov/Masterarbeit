@@ -48,9 +48,9 @@ function R2=spice_source2(filename,t,mu,epsilon,s,r_0,l2,Z_1_n,Z_2_n,Z_1_2,Z_2_2
         U_tr_index=8;
     else
         % Index der tangentialen Spannungsquellen -> Skalar
-        U_tl_index=9;
+        U_tl_index=5;
         % Index der transversalen Spannungsquellen -> Skalar
-        U_tr_index=10;
+        U_tr_index=6;
     end
 
     % Konstanten
@@ -71,6 +71,9 @@ function R2=spice_source2(filename,t,mu,epsilon,s,r_0,l2,Z_1_n,Z_2_n,Z_1_2,Z_2_2
 
     % örtliche Diskretisierung (in m) -> Skalar
     h=l2/R2;
+    
+    % offset for the index for the field position in r_vector_tl
+    R_offset=R_start-R2-1;
 
     % Leitungsparamter
     Z_c=sqrt(mu/epsilon)/pi*acosh(s/(2*r_0));   % Wellenwiderstand (in Ohm) -> Skalar
@@ -163,21 +166,21 @@ function R2=spice_source2(filename,t,mu,epsilon,s,r_0,l2,Z_1_n,Z_2_n,Z_1_2,Z_2_2
             % Diode parallel zum Lastwiderstand am Anfang
             fprintf(netlist,'D %g 0 %g %g 0\n',R_start+1,1e-6,25e-3);        
         end
-        fprintf(netlist,'U %g %g 1 %d %d\n',R_start-1,R_start+1,U_tr_index,2*R2+1);        % Spannungsquelle U_t1 am Anfang % 2*R2+1
+        fprintf(netlist,'U %g %g 1 %d %d\n',R_start-1,R_start+1,U_tr_index,3*R2+1+R_offset);        % Spannungsquelle U_t1 am Anfang % 2*R2+1
         for n=1:R2 % für Diskretisierungszelle n
             if n==1
                 % first cell 
                 fprintf(netlist,'L %d %d %g 0 0\n',R_start*n-1,R_start*n+2,L);
-                fprintf(netlist,'U %d %d 1 %d %d\n',R_start*n+3,R_start*n+2,U_tl_index,n);    % Spannungsquelle E_tan / Voltage source E_tan % n
+                fprintf(netlist,'U %d %d 1 %d %d\n',R_start*n+3,R_start*n+2,U_tl_index,n*R2+1+R_offset);    % Spannungsquelle E_tan / Voltage source E_tan % n
                 fprintf(netlist,'C %d %d %g 0 0\n',R_start*n+3,0,C);        % Querkapazit?t / shunt capacitance
             else
                 % other cells
                 fprintf(netlist,'L %d %d %g 0 0\n',(R_start-1)+(2*n),(R_start-1)+(2*n+1),L);      % L?ngsinduktivit?t
-                fprintf(netlist,'U %d %d 1 %d %d\n',(R_start-1)+(2*n+2),(R_start-1)+(2*n+1),U_tl_index,n);    % Spannungsquelle E_tan / Voltage source E_tan
+                fprintf(netlist,'U %d %d 1 %d %d\n',(R_start-1)+(2*n+2),(R_start-1)+(2*n+1),U_tl_index,n+R2+R_offset);    % Spannungsquelle E_tan / Voltage source E_tan
                 fprintf(netlist,'C %d %d %g 0 0\n',(R_start-1)+(2*n+2),0,C);        % Querkapazit?t / shunt capacitance
             end
         end
-        fprintf(netlist,'U %d %d 1 %d %d\n',2*R_start-2,2*R_start-1,U_tr_index,2*R2+2);      % Spannungsquelle U_t2 am Ende
+        fprintf(netlist,'U %d %d 1 %d %d\n',2*R_start-2,2*R_start-1,U_tr_index,3*R2+2+R_offset);      % Spannungsquelle U_t2 am Ende
         fprintf(netlist,'R %d 0 %g 0 0\n',2*R_start-1,Z_2_2);               % Lastwiderstand am Ende
         if diode_2
             % Diode parallel zum Lastwiderstand am Ende
